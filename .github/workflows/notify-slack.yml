@@ -1,8 +1,7 @@
 name: Notify Slack about PRs
 
 on:
-  schedule:
-    - cron: '0 1 * * *' # 한국 시간으로 오전 10시에 실행됩니다.
+  workflow_dispatch:
 
 jobs:
   notify-slack:
