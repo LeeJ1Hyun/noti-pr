@@ -16,7 +16,9 @@ jobs:
           node-version: 16
 
       - name: Install 의존성
-        run: npm install
+        run: |
+          npm init -y
+          npm install
 
       - name: 찾고 슬랙으로 알림 보내기
         run: node .github/scripts/notify-slack.js
