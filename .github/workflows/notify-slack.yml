@@ -18,7 +18,7 @@ jobs:
       - name: Install 의존성
         run: |
           npm init -y
-          npm install
+          npm install axios
 
       - name: 찾고 슬랙으로 알림 보내기
         run: node .github/scripts/notify-slack.js
