@@ -3,7 +3,7 @@ const axios = require('axios');
 async function notifySlack() {
   const githubToken = process.env.GITHUB_TOKEN;
   const slackWebhookUrl = process.env.SLACK_WEBHOOK_URL;
-  const response = await axios.get('https://github.com/LeeJ1Hyun/noti-pr/pulls', {
+  const response = await axios.get('https://api.github.com/repos/LeeJ1Hyun/noti-pr/pulls', {
     headers: {
       Authorization: `Bearer ${githubToken}`,
     },
