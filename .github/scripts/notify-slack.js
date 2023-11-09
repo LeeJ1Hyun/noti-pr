@@ -15,11 +15,11 @@ async function notifySlack() {
   });
 
   const prsToNotify = response.data.filter((pr) => {
-    const hasComments = pr.comments === 0;
+    const hasComments = pr.comments > 0;
     const isApproved = pr.approved && pr.approved.some((review) => review.state === 'APPROVED');
     const hasWipLabel = pr.labels.some((label) => label.name.toLowerCase() === 'wip');
 
-    return hasComments && !isApproved && !hasWipLabel;
+    return !hasComments && !isApproved && !hasWipLabel;
   });
 
   const prLinks = prsToNotify.map((pr) => pr.html_url);
