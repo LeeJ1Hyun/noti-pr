@@ -40,11 +40,12 @@ async function getPRsToNotify() {
     const hasWipLabel = pr.labels.some((label) => label.name.toLowerCase() === 'wip');
 
     const dLabel = pr.labels.find((label) => label.name.match(/^D-\d+$/));
+    const shouldNotify = (!hasComments && !isApproved && !hasWipLabel) || (dLabel && !hasComments && !isApproved && !hasWipLabel);
 
     return {
       title: `${dLabel ? `[${dLabel.name}] ` : ''}${pr.title}`,
       html_url: pr.html_url,
-      shouldNotify: (!hasComments && !isApproved && !hasWipLabel) || dLabel,
+      shouldNotify: shouldNotify,
       dLabelNumber: dLabel ? parseInt(dLabel.name.match(/\d+/)[0]) : Infinity,
     };
   }));
