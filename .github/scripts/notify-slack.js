@@ -35,7 +35,7 @@ async function notifySlack() {
     const hasWipLabel = pr.labels.some((label) => label.name.toLowerCase() === 'wip');
 
     // Check if the PR has the d-n label
-    const dLabel = pr.labels.find((label) => label.name.match(/^d-\d+$/));
+    const dLabel = pr.labels.find((label) => label.name.match(/^D-\d+$/));
 
     return {
       title: `${dLabel ? `[${dLabel.name}] ` : ''}${pr.title}`,
