@@ -21,7 +21,7 @@ jobs:
           npm install axios @slack/web-api dotenv
 
       - name: 찾고 슬랙으로 알림 보내기
-        run: node .github/scripts/notify-slack-bot.js
+        run: node .github/scripts/notify-slack-ver2.js
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
