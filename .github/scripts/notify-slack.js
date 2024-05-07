@@ -46,7 +46,7 @@ async function notifySlack() {
 
   const prLinks = prsToNotify.filter((pr) => pr.shouldNotify).map((pr) => `<${pr.html_url}|${pr.title}>`);
   if (prLinks.length > 0) {
-    const message = `😎 리뷰를 기다리고 있는 PR들이 있어요!\n${prLinks.join('\n')}`;
+    const message = `<!here> 😎 리뷰를 기다리고 있는 PR들이 있어요!\n${prLinks.join('\n')}`;
     await axios.post(slackWebhookUrl, { text: message });
   } else {
     console.log('No PRs to notify about.');
