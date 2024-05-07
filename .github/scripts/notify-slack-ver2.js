@@ -55,6 +55,25 @@ async function getPRsToNotify() {
 
 async function sendNotification() {
   const prsToNotify = await getPRsToNotify();
+
+  // 정렬 기준에 따라 PR을 우선순위에 따라 정렬
+  prsToNotify.sort((a, b) => {
+    // D-N label 유무에 따라 정렬
+    if (a.dLabelNumber !== Infinity && b.dLabelNumber === Infinity) {
+      return -1;
+    } else if (a.dLabelNumber === Infinity && b.dLabelNumber !== Infinity) {
+      return 1;
+    } else {
+      // D-N label이 같은 경우 created된지 오래된 것부터 우선 정렬
+      if (a.dLabelNumber === b.dLabelNumber) {
+        return new Date(a.created_at) - new Date(b.created_at);
+      } else {
+        // D-N label이 있는 것들끼리는 N이 작은 것부터 우선 정렬
+        return a.dLabelNumber - b.dLabelNumber;
+      }
+    }
+  });
+
   const prLinks = prsToNotify.filter((pr) => pr.shouldNotify).map((pr) => `<${pr.html_url}|${pr.title}>`);
   const prsToNotifyCount = prLinks.length;
 
