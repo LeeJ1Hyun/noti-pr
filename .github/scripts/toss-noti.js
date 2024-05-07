@@ -1,6 +1,8 @@
+const { GITHUB_REPOSITORY, SLACK_CAHNNEL_ID } = process.env;
+
 async function main() {
-  const owner = process.env.GITHUB_REPOSITORY?.split("/")[0];
-  const repo = process.env.GITHUB_REPOSITORY?.split("/")[1];
+  const owner = GITHUB_REPOSITORY.split("/")[0];
+  const repo = GITHUB_REPOSITORY.split("/")[1];
 
   const { data: pullRequests } = await githubClient.rest.pulls.list({
     owner,
@@ -15,29 +17,30 @@ async function main() {
   sendMessage(messages);
 }
 
-async function collectMessages(pullRequests: IPullRequest[]): IMessage[] {
-  return pullRequests
-    .flatMap((pr) => {
-      if (isDraft(pr) || isAlreadyReviewed(pr)) return [];
-      else return [constructMessage(pr)];
-    })
+async function collectMessages(pullRequests) {
+  return pullRequests.flatMap((pr) => {
+    if (isDraft(pr) || isAlreadyReviewed(pr)) return [];
+    else return [constructMessage(pr)];
+  });
 }
 
-async function sendMessage(messages: IMessage[]) {
+async function sendMessage(messages) {
   if (messages.length === 0) return;
 
   const threadStartMessage = await slackClient.chat.postMessage({
     text: "리뷰해주세요!",
-    channel: process.env.SLACK_CAHNNEL_ID
+    channel: SLACK_CAHNNEL_ID
   });
 
   Promise.all(
     messages.map((message) => {
       slackClient.chat.postMessage({
         text: message.text,
-        channel: process.env.SLACK_CAHNNEL_ID,
-        thread_ts = threadStartMessage.ts
+        channel: SLACK_CAHNNEL_ID,
+        thread_ts: threadStartMessage.ts // Changed '=' to ':'
       });
     })
   );
 }
+
+main();
