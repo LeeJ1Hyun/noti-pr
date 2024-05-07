@@ -62,18 +62,16 @@ async function notifySlack() {
   }
 });
 
-
   const prsToNotifyCount = prsToNotifySorted.filter((pr) => pr.shouldNotify).length;
   const prLinks = prsToNotifySorted.filter((pr) => pr.shouldNotify).map((pr) => `<${pr.html_url}|${pr.title}>`);
-  if (prLinks.length > 0) {
-    const message = `<!here> 😎 리뷰를 기다리고 있는 PR이 ${prsToNotifyCount}개 있어요!\n${prLinks.join('\n')}`;
+  if (prsToNotifyCount >= 7) {
+    const message = `<!here> 🥹 한 걸음 뒤엔 항상 내가 있었는데 그대.. 리뷰를 기다리고 있는 PR이 ${prsToNotifyCount}개나 있어요!`;
+    await axios.post(slackWebhookUrl, { text: message });
+  } else if (prLinks.length > 0) {
+    const message = `<!here> 📢 리뷰를 기다리고 있는 PR이 ${prsToNotifyCount}개 있어요!\n${prLinks.join('\n')}`;
     await axios.post(slackWebhookUrl, { text: message });
   } else {
     const message = `<!here> 🥳 리뷰를 기다리는 PR이 없어요!`;
     await axios.post(slackWebhookUrl, { text: message });
   }
 }
-
-notifySlack().catch((error) => {
-  console.error('Error notifying Slack:', error);
-});
