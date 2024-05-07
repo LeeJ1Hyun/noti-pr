@@ -38,19 +38,20 @@ async function notifySlack() {
     const dLabel = pr.labels.find((label) => label.name.match(/^d-\d+$/));
 
     return {
-      title: `${dLabel ? `:${dLabel.name.replace(/\W/g, '')}: ` : ''}${pr.title}`,
+      title: `${dLabel ? `[${dLabel.name}] ` : ''}${pr.title}`,
       html_url: pr.html_url,
       shouldNotify: !hasComments && !isApproved && !hasWipLabel && dLabel,
     };
   }));
 
   const prsToNotifyCount = prsToNotify.filter((pr) => pr.shouldNotify).length;
-
-  if (prsToNotifyCount > 0) {
-    const message = `<!here> 😎 리뷰를 기다리고 있는 PR이 ${prsToNotifyCount}개 있어요!`;
+  const prLinks = prsToNotify.filter((pr) => pr.shouldNotify).map((pr) => `<${pr.html_url}|${pr.title}>`);
+  if (prLinks.length > 0) {
+    const message = `<!here> 😎 리뷰를 기다리고 있는 PR이 ${prsToNotifyCount}개 있어요!\n${prLinks.join('\n')}`;
     await axios.post(slackWebhookUrl, { text: message });
   } else {
-    console.log('No PRs to notify about.');
+    const message = `<!here> 🥳 리뷰를 기다리는 PR이 없어요!`;
+    await axios.post(slackWebhookUrl, { text: message });
   }
 }
 
