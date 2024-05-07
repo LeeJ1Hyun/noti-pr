@@ -65,7 +65,6 @@ async function sendNotification() {
       return 1;
     } else {
       return a.dLabelNumber - b.dLabelNumber;
-      }
     }
   });
 
