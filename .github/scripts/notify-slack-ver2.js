@@ -15,7 +15,7 @@ async function getPRsToNotify() {
     params: {
       state: 'open',
       sort: 'created',
-      direction: 'desc',
+      direction: 'asc',
     },
   });
 
@@ -64,12 +64,7 @@ async function sendNotification() {
     } else if (a.dLabelNumber === Infinity && b.dLabelNumber !== Infinity) {
       return 1;
     } else {
-      // D-N label이 같은 경우 created된지 오래된 것부터 우선 정렬
-      if (a.dLabelNumber === b.dLabelNumber) {
-        return new Date(a.created_at) - new Date(b.created_at);
-      } else {
-        // D-N label이 있는 것들끼리는 N이 작은 것부터 우선 정렬
-        return a.dLabelNumber - b.dLabelNumber;
+      return a.dLabelNumber - b.dLabelNumber;
       }
     }
   });
