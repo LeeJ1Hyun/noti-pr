@@ -75,3 +75,7 @@ async function notifySlack() {
     await axios.post(slackWebhookUrl, { text: message });
   }
 }
+
+notifySlack().catch((error) => {
+  console.error('Error notifying Slack:', error);
+});
