@@ -1,10 +1,15 @@
-const { GITHUB_REPOSITORY, SLACK_CAHNNEL_ID } = process.env;
+const { Octokit } = require('@octokit/rest');
+const octokit = new Octokit({
+  auth: process.env.GITHUB_TOKEN
+});
+
+const { SLACK_CAHNNEL_ID } = process.env;
 
 async function main() {
-  const owner = GITHUB_REPOSITORY.split("/")[0];
-  const repo = GITHUB_REPOSITORY.split("/")[1];
+  const owner = process.env.GITHUB_REPOSITORY.split("/")[0];
+  const repo = process.env.GITHUB_REPOSITORY.split("/")[1];
 
-  const { data: pullRequests } = await githubClient.rest.pulls.list({
+  const { data: pullRequests } = await octokit.pulls.list({
     owner,
     repo,
     state: "open",
@@ -14,7 +19,7 @@ async function main() {
   });
 
   const messages = await collectMessages(pullRequests);
-  sendMessage(messages);
+  await sendMessage(messages);
 }
 
 async function collectMessages(pullRequests) {
@@ -32,12 +37,12 @@ async function sendMessage(messages) {
     channel: SLACK_CAHNNEL_ID
   });
 
-  Promise.all(
+  await Promise.all(
     messages.map((message) => {
-      slackClient.chat.postMessage({
+      return slackClient.chat.postMessage({
         text: message.text,
         channel: SLACK_CAHNNEL_ID,
-        thread_ts: threadStartMessage.ts // Changed '=' to ':'
+        thread_ts: threadStartMessage.ts
       });
     })
   );
