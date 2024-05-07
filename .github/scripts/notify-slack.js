@@ -14,15 +14,30 @@ async function notifySlack() {
     },
   });
 
-  const prsToNotify = response.data.filter((pr) => {
-    const hasComments = pr.comments > 0;
-    const isApproved = pr.approved && pr.approved.some((review) => review.state === 'APPROVED');
+  const prsToNotify = await Promise.all(response.data.map(async (pr) => {
+    const prNumber = pr.number;
+    const reviewResponse = await axios.get(`https://api.github.com/repos/LeeJ1Hyun/noti-pr/pulls/${prNumber}/reviews`, {
+      headers: {
+        Authorization: `Bearer ${githubToken}`,
+      },
+    });
+    const commentResponse = await axios.get(`https://api.github.com/repos/LeeJ1Hyun/noti-pr/issues/${prNumber}/comments`, {
+      headers: {
+        Authorization: `Bearer ${githubToken}`,
+      },
+    });
+
+    const reviewCount = reviewResponse.data.length;
+    const commentCount = commentResponse.data.length;
+
+    const hasComments = commentCount > 0;
+    const isApproved = reviewCount > 0 && reviewResponse.data.some((review) => review.state === 'APPROVED');
     const hasWipLabel = pr.labels.some((label) => label.name.toLowerCase() === 'wip');
 
-    return !hasComments && !isApproved && !hasWipLabel;
-  });
+    return { title: pr.title, html_url: pr.html_url, shouldNotify: !hasComments && !isApproved && !hasWipLabel };
+  }));
 
-  const prLinks = prsToNotify.map((pr) => pr.html_url);
+  const prLinks = prsToNotify.filter((pr) => pr.shouldNotify).map((pr) => `<${pr.html_url}|${pr.title}>`);
   if (prLinks.length > 0) {
     const message = `😎 리뷰를 기다리고 있는 PR들이 있어요!\n${prLinks.join('\n')}`;
     await axios.post(slackWebhookUrl, { text: message });
