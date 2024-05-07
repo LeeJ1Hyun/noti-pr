@@ -44,8 +44,27 @@ async function notifySlack() {
     };
   }));
 
-  const prsToNotifyCount = prsToNotify.filter((pr) => pr.shouldNotify).length;
-  const prLinks = prsToNotify.filter((pr) => pr.shouldNotify).map((pr) => `<${pr.html_url}|${pr.title}>`);
+  const prsToNotifySorted = prsToNotify.sort((a, b) => {
+  // Extract D-N label numbers from PR titles
+  const dLabelNumberA = a.title.match(/\[D-(\d+)\]/);
+  const dLabelNumberB = b.title.match(/\[D-(\d+)\]/);
+
+  if (dLabelNumberA && dLabelNumberB) {
+    const numA = parseInt(dLabelNumberA[1]);
+    const numB = parseInt(dLabelNumberB[1]);
+    return numA - numB;
+  } else if (dLabelNumberA) {
+    return -1;
+  } else if (dLabelNumberB) {
+    return 1;
+  } else {
+    return 0;
+  }
+});
+
+
+  const prsToNotifyCount = prsToNotifySorted.filter((pr) => pr.shouldNotify).length;
+  const prLinks = prsToNotifySorted.filter((pr) => pr.shouldNotify).map((pr) => `<${pr.html_url}|${pr.title}>`);
   if (prLinks.length > 0) {
     const message = `<!here> 😎 리뷰를 기다리고 있는 PR이 ${prsToNotifyCount}개 있어요!\n${prLinks.join('\n')}`;
     await axios.post(slackWebhookUrl, { text: message });
