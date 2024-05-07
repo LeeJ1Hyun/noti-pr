@@ -1,4 +1,4 @@
-name: Notify Slack about PRs
+name: Notify Slack about PRs ver2
 
 on:
   workflow_dispatch:
