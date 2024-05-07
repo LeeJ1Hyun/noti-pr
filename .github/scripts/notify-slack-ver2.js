@@ -1,5 +1,4 @@
 const { WebClient } = require('@slack/web-api');
-const { RTMClient } = require('@slack/rtm-api');
 const axios = require('axios');
 require('dotenv').config();
 
@@ -7,7 +6,6 @@ const githubToken = process.env.GITHUB_TOKEN;
 const slackBotToken = process.env.SLACK_BOT_TOKEN;
 
 const web = new WebClient(slackBotToken);
-const rtm = new RTMClient(slackBotToken);
 
 async function getPRsToNotify() {
   const response = await axios.get('https://api.github.com/repos/LeeJ1Hyun/noti-pr/pulls', {
@@ -80,9 +78,4 @@ async function sendNotification() {
   }
 }
 
-rtm.start().catch(console.error);
-rtm.on('message', async (message) => {
-  if (message.text === 'notify') {
-    await sendNotification();
-  }
-});
+sendNotification().catch(console.error); // 이벤트 핸들러 삭제, 바로 알림 전송
