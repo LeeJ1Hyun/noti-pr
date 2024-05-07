@@ -5,10 +5,14 @@ require('dotenv').config();
 const githubToken = process.env.GITHUB_TOKEN;
 const slackBotToken = process.env.SLACK_BOT_TOKEN;
 
+const repositoryOwner = 'LeeJ1Hyun';
+const repositoryName = 'noti-pr';
+const repositoryFullName = `${repositoryOwner}/${repositoryName}`;
+
 const web = new WebClient(slackBotToken);
 
 async function getPRsToNotify() {
-  const response = await axios.get('https://api.github.com/repos/LeeJ1Hyun/noti-pr/pulls', {
+  const response = await axios.get(`https://api.github.com/repos/${repositoryFullName}/pulls`, {
     headers: {
       Authorization: `Bearer ${githubToken}`,
     },
@@ -21,12 +25,12 @@ async function getPRsToNotify() {
 
   const prsToNotify = await Promise.all(response.data.map(async (pr) => {
     const prNumber = pr.number;
-    const reviewResponse = await axios.get(`https://api.github.com/repos/LeeJ1Hyun/noti-pr/pulls/${prNumber}/reviews`, {
+    const reviewResponse = await axios.get(`https://api.github.com/repos/${repositoryFullName}/pulls/${prNumber}/reviews`, {
       headers: {
         Authorization: `Bearer ${githubToken}`,
       },
     });
-    const commentResponse = await axios.get(`https://api.github.com/repos/LeeJ1Hyun/noti-pr/issues/${prNumber}/comments`, {
+    const commentResponse = await axios.get(`https://api.github.com/repos/${repositoryFullName}/issues/${prNumber}/comments`, {
       headers: {
         Authorization: `Bearer ${githubToken}`,
       },
@@ -72,7 +76,7 @@ async function sendNotification() {
   const prsToNotifyCount = prLinks.length;
 
   if (prsToNotifyCount >= 7) {
-    const message = `<!here> 🥹 이제는! 더 이상! 물러날 곳이 없다! <${'https://github.com/dealicious-inc/payment-point-server/pulls'}|리뷰어 찾는 PR들> 보러 갈까요?`;
+    const message = `<!here> 🥹 이제는! 더 이상! 물러날 곳이 없다! <${'https://github.com/${repositoryFullName}/pulls'}|리뷰어 찾는 PR들> 보러 갈까요?`;
     await web.chat.postMessage({
       channel: '일기장',
       text: message,
