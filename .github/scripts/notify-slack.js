@@ -34,36 +34,31 @@ async function notifySlack() {
     const isApproved = reviewCount > 0 && reviewResponse.data.some((review) => review.state === 'APPROVED');
     const hasWipLabel = pr.labels.some((label) => label.name.toLowerCase() === 'wip');
 
-    // Check if the PR has the d-n label
     const dLabel = pr.labels.find((label) => label.name.match(/^D-\d+$/));
 
     return {
       title: `${dLabel ? `[${dLabel.name}] ` : ''}${pr.title}`,
       html_url: pr.html_url,
-      shouldNotify: !hasComments && !isApproved && !hasWipLabel && dLabel,
+      shouldNotify: (!hasComments && !isApproved && !hasWipLabel) || dLabel,
+      dLabelNumber: dLabel ? parseInt(dLabel.name.match(/\d+/)[0]) : Infinity,
     };
   }));
 
   const prsToNotifySorted = prsToNotify.sort((a, b) => {
-  // Extract D-N label numbers from PR titles
-  const dLabelNumberA = a.title.match(/\[D-(\d+)\]/);
-  const dLabelNumberB = b.title.match(/\[D-(\d+)\]/);
-
-  if (dLabelNumberA && dLabelNumberB) {
-    const numA = parseInt(dLabelNumberA[1]);
-    const numB = parseInt(dLabelNumberB[1]);
-    return numA - numB;
-  } else if (dLabelNumberA) {
-    return -1;
-  } else if (dLabelNumberB) {
-    return 1;
-  } else {
-    return 0;
-  }
-});
+    if (a.dLabelNumber !== Infinity && b.dLabelNumber !== Infinity) {
+      return a.dLabelNumber - b.dLabelNumber;
+    } else if (a.dLabelNumber !== Infinity) {
+      return -1;
+    } else if (b.dLabelNumber !== Infinity) {
+      return 1;
+    } else {
+      return 0;
+    }
+  });
 
   const prsToNotifyCount = prsToNotifySorted.filter((pr) => pr.shouldNotify).length;
   const prLinks = prsToNotifySorted.filter((pr) => pr.shouldNotify).map((pr) => `<${pr.html_url}|${pr.title}>`);
+  
   if (prsToNotifyCount >= 7) {
     const message = `<!here> 🥹 한 걸음 뒤엔 항상 내가 있었는데 그대.. 리뷰를 기다리고 있는 PR이 ${prsToNotifyCount}개나 있어요!`;
     await axios.post(slackWebhookUrl, { text: message });
