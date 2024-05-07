@@ -3,7 +3,9 @@ const axios = require('axios');
 async function notifySlack() {
   const githubToken = process.env.GITHUB_TOKEN;
   const slackWebhookUrl = process.env.SLACK_WEBHOOK_URL;
-  const response = await axios.get('https://api.github.com/repos/LeeJ1Hyun/noti-pr/pulls', {
+  const prListUrl = 'https://api.github.com/repos/LeeJ1Hyun/noti-pr/pulls';
+  
+  const response = await axios.get(prListUrl, {
     headers: {
       Authorization: `Bearer ${githubToken}`,
     },
@@ -60,7 +62,7 @@ async function notifySlack() {
   const prLinks = prsToNotifySorted.filter((pr) => pr.shouldNotify).map((pr) => `<${pr.html_url}|${pr.title}>`);
   
   if (prsToNotifyCount >= 7) {
-    const message = `<!here> 🥹 한 걸음 뒤엔 항상 내가 있었는데 그대.. 리뷰를 기다리고 있는 PR이 ${prsToNotifyCount}개나 있어요!`;
+    const message = `<!here> 🥹 이제는! 더 이상! 물러날 곳이 없다! `<${prListUrl}|리뷰어 찾는 PR들> 보러 갈까요?`;
     await axios.post(slackWebhookUrl, { text: message });
   } else if (prLinks.length > 0) {
     const message = `<!here> 📢 리뷰를 기다리고 있는 PR이 ${prsToNotifyCount}개 있어요!\n${prLinks.join('\n')}`;
