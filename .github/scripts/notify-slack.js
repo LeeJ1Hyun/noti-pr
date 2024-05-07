@@ -60,9 +60,9 @@ async function notifySlack() {
 
   const prsToNotifyCount = prsToNotifySorted.filter((pr) => pr.shouldNotify).length;
   const prLinks = prsToNotifySorted.filter((pr) => pr.shouldNotify).map((pr) => `<${pr.html_url}|${pr.title}>`);
-  
+
   if (prsToNotifyCount >= 7) {
-    const message = `<!here> 🥹 이제는! 더 이상! 물러날 곳이 없다! `<${prListUrl}|리뷰어 찾는 PR들> 보러 갈까요?`;
+    const message = `<!here> 🥹 이제는! 더 이상! 물러날 곳이 없다! <${prListUrl}|리뷰어 찾는 PR들> 보러 갈까요?`;
     await axios.post(slackWebhookUrl, { text: message });
   } else if (prLinks.length > 0) {
     const message = `<!here> 📢 리뷰를 기다리고 있는 PR이 ${prsToNotifyCount}개 있어요!\n${prLinks.join('\n')}`;
