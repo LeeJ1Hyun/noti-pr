@@ -1,8 +1,7 @@
 name: Notify Slack about PRs ver2
-
 on:
-  workflow_dispatch:
-
+  schedule:
+    - cron: '10 23 * * *'
 jobs:
   notify-slack:
     runs-on: ubuntu-latest
