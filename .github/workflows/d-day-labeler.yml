@@ -1,7 +1,7 @@
 name: update PR D-n Labels
 on:
   schedule:
-    - cron: '25 13 * * *'
+    - cron: '35 13 * * *'
 jobs:
   d-day-labeler:
     runs-on: [ubuntu-latest]
