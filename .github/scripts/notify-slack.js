@@ -34,7 +34,14 @@ async function notifySlack() {
     const isApproved = reviewCount > 0 && reviewResponse.data.some((review) => review.state === 'APPROVED');
     const hasWipLabel = pr.labels.some((label) => label.name.toLowerCase() === 'wip');
 
-    return { title: pr.title, html_url: pr.html_url, shouldNotify: !hasComments && !isApproved && !hasWipLabel };
+    // Check if the PR has the d-n label
+    const dLabel = pr.labels.find((label) => label.name.match(/^d-\d+$/));
+
+    return {
+      title: `${dLabel ? `[${dLabel.name}] ` : ''}${pr.title}`,
+      html_url: pr.html_url,
+      shouldNotify: !hasComments && !isApproved && !hasWipLabel && dLabel,
+    };
   }));
 
   const prLinks = prsToNotify.filter((pr) => pr.shouldNotify).map((pr) => `<${pr.html_url}|${pr.title}>`);
