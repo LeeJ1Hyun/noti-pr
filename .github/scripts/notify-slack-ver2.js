@@ -72,7 +72,7 @@ async function sendNotification() {
     }
   });
 
-  const prLinks = prsToNotify.filter((pr) => pr.shouldNotify).map((pr) => `${pr.html_url}`);
+  const prLinks = prsToNotify.filter((pr) => pr.shouldNotify).map((pr) => `<${pr.html_url}|${pr.title}>`);
   const prsToNotifyCount = prLinks.length;
 
   if (prsToNotifyCount >= 7) {
