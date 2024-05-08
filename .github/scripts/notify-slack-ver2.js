@@ -72,35 +72,52 @@ async function sendNotification() {
     }
   });
 
-  const prLinks = prsToNotify.filter((pr) => pr.shouldNotify).map((pr) => `<${pr.html_url}|${pr.title}>`);
-//   const prLinks = prsToNotify.filter((pr) => pr.shouldNotify).map((pr) => {
-//   const urlWithoutProtocol = pr.html_url.replace(/^https?:\/\//, '');
-//   return `<${urlWithoutProtocol}|${pr.title}>`;
-// });
+  const prLinks = prsToNotify.filter((pr) => pr.shouldNotify).map((pr) => ({
+    type: 'section',
+    text: {
+      type: 'mrkdwn',
+      text: `[${pr.title}](${pr.html_url})`
+    }
+  }));
 
   const prsToNotifyCount = prLinks.length;
 
+  let messageBlocks = [];
+
   if (prsToNotifyCount >= 7) {
-    const message = `<!here> 🥹 이제는! 더 이상! 물러날 곳이 없다! <${`https://github.com/${repositoryFullName}/pulls`}|리뷰어 찾는 PR들> 보러 갈까요?`;
-    await web.chat.postMessage({
-      channel: '일기장',
-      text: message,
-      unfurl_links: false,
+    messageBlocks.push({
+      type: 'section',
+      text: {
+        type: 'mrkdwn',
+        text: `<!here> 🥹 이제는! 더 이상! 물러날 곳이 없다! <https://github.com/${repositoryFullName}/pulls|리뷰어 찾는 PR들> 보러 갈까요?`
+      }
     });
   } else if (prsToNotifyCount > 0) {
-    const message = `<!here> 📢 리뷰를 기다리고 있는 PR이 ${prsToNotifyCount}개 있어요!\n${prLinks.join('\n')}`;
-    await web.chat.postMessage({
-      channel: '일기장',
-      text: message,
-      unfurl_links: false,
+    messageBlocks.push({
+      type: 'section',
+      text: {
+        type: 'mrkdwn',
+        text: `<!here> 📢 리뷰를 기다리고 있는 PR이 ${prsToNotifyCount}개 있어요!`
+      }
+    });
+
+    prLinks.forEach((prLink) => {
+      messageBlocks.push(prLink);
     });
   } else {
-    const message = `<!here> 🥳 리뷰를 기다리는 PR이 없어요!`;
-    await web.chat.postMessage({
-      channel: '일기장',
-      text: message,
+    messageBlocks.push({
+      type: 'section',
+      text: {
+        type: 'mrkdwn',
+        text: `<!here> 🥳 리뷰를 기다리는 PR이 없어요!`
+      }
     });
   }
+
+  await web.chat.postMessage({
+    channel: '일기장',
+    blocks: messageBlocks,
+  });
 }
 
 sendNotification().catch(console.error);
