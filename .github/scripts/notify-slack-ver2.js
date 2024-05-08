@@ -76,7 +76,7 @@ async function sendNotification() {
   const prsToNotifyCount = prLinks.length;
 
   if (prsToNotifyCount >= 7) {
-    const message = `<!here> 🥹 이제는! 더 이상! 물러날 곳이 없다! <${'https://github.com/${repositoryFullName}/pulls'}|리뷰어 찾는 PR들> 보러 갈까요?`;
+    const message = `<!here> 🥹 이제는! 더 이상! 물러날 곳이 없다! <${`https://github.com/${repositoryFullName}/pulls`}|리뷰어 찾는 PR들> 보러 갈까요?`;
     await web.chat.postMessage({
       channel: '일기장',
       text: message,
