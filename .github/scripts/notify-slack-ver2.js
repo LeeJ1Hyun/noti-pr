@@ -72,7 +72,11 @@ async function sendNotification() {
     }
   });
 
-  const prLinks = prsToNotify.filter((pr) => pr.shouldNotify).map((pr) => `<${pr.html_url}|${pr.title}>`);
+  const prLinks = prsToNotify.filter((pr) => pr.shouldNotify).map((pr) => {
+  const urlWithoutProtocol = pr.html_url.replace(/^https?:\/\//, '');
+  return `<${urlWithoutProtocol}|${pr.title}>`;
+});
+
   const prsToNotifyCount = prLinks.length;
 
   if (prsToNotifyCount >= 7) {
