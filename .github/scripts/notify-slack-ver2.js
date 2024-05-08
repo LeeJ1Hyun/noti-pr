@@ -41,7 +41,7 @@ async function getPRsToNotify() {
 
     const hasComments = commentCount > 0;
     const isApproved = reviewCount > 0 && reviewResponse.data.some((review) => review.state === 'APPROVED');
-    const hasWipLabel = pr.labels.some((label) => label.name.toLowerCase() === 'wip');
+    const hasWipLabel = pr.labels.some((label) => label.name.toUpperCase() === 'WIP');
 
     const dLabel = pr.labels.find((label) => label.name.match(/^D-\d+$/));
     const shouldNotify = (!hasComments && !isApproved && !hasWipLabel) || (dLabel && !hasComments && !isApproved && !hasWipLabel);
