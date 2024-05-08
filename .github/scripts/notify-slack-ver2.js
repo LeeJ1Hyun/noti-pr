@@ -80,12 +80,14 @@ async function sendNotification() {
     await web.chat.postMessage({
       channel: '일기장',
       text: message,
+      unfurl_links: false,
     });
   } else if (prsToNotifyCount > 0) {
     const message = `<!here> 📢 리뷰를 기다리고 있는 PR이 ${prsToNotifyCount}개 있어요!\n${prLinks.join('\n')}`;
     await web.chat.postMessage({
       channel: '일기장',
       text: message,
+      unfurl_links: false,
     });
   } else {
     const message = `<!here> 🥳 리뷰를 기다리는 PR이 없어요!`;
@@ -96,4 +98,4 @@ async function sendNotification() {
   }
 }
 
-sendNotification().catch(console.error); // 이벤트 핸들러 삭제, 바로 알림 전송
+sendNotification().catch(console.error);
