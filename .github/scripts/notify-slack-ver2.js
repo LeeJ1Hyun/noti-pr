@@ -76,7 +76,7 @@ async function sendNotification() {
     type: 'section',
     text: {
       type: 'mrkdwn',
-      text: `[${pr.title}](${pr.html_url})`
+      text: `<${pr.html_url}|${pr.title}>`
     }
   }));
 
@@ -117,6 +117,7 @@ async function sendNotification() {
   await web.chat.postMessage({
     channel: '일기장',
     blocks: messageBlocks,
+    unfurl_links: false,
   });
 }
 
