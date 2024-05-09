@@ -26,7 +26,6 @@ async function getPRsToNotify() {
     const prsToNotify = await Promise.all(response.data.map(async (pr) => {
         const prNumber = pr.number;
 
-        // 리뷰와 댓글을 병합하여 가져오기
         const [reviewResponse, commentResponse] = await Promise.all([
             axios.get(`https://api.github.com/repos/${repositoryFullName}/pulls/${prNumber}/reviews`, {
                 headers: {
@@ -40,13 +39,11 @@ async function getPRsToNotify() {
             })
         ]);
 
-        // 리뷰 및 댓글 개수 가져오기
         const reviewCount = reviewResponse.data.length;
         const commentCount = commentResponse.data.length;
 
-        // 리뷰어 찾는 로직 수정
         const hasComments = commentCount > 0 || reviewCount > 0;
-        const isApproved = reviewCount > 0 && reviewResponse.data.some((review) => review.state === 'APPROVED');
+        const isApproved = reviewResponse.data.some((review) => review.state === 'APPROVED');
         const hasWipLabel = pr.labels.some((label) => label.name.toUpperCase() === 'WIP');
 
         const dLabel = pr.labels.find((label) => label.name.match(/^D-\d+$/));
@@ -66,9 +63,7 @@ async function getPRsToNotify() {
 async function sendNotification() {
     const prsToNotify = await getPRsToNotify();
 
-    // 정렬 기준에 따라 PR을 우선순위에 따라 정렬
     prsToNotify.sort((a, b) => {
-        // D-N label 유무에 따라 정렬
         if (a.dLabelNumber !== Infinity && b.dLabelNumber === Infinity) {
             return -1;
         } else if (a.dLabelNumber === Infinity && b.dLabelNumber !== Infinity) {
