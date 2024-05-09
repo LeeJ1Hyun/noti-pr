@@ -1,11 +1,10 @@
 name: Daily Pull Request Status
 
 on:
-  schedule:
-    - cron: '10 5 * * *' # 매일 오후 2시 10분에 실행 (KST 기준)
+  workflow_dispatch:
 
 jobs:
-  notify-slack:
+  notify-daily-pr-status:
     runs-on: [ubuntu-latest]
     steps:
       - name: Checkout
