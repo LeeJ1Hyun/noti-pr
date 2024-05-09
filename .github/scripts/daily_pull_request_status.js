@@ -25,21 +25,27 @@ async function getPRsToNotify() {
 
     const prsToNotify = await Promise.all(response.data.map(async (pr) => {
         const prNumber = pr.number;
-        const reviewResponse = await axios.get(`https://api.github.com/repos/${repositoryFullName}/pulls/${prNumber}/reviews`, {
-            headers: {
-                Authorization: `Bearer ${githubToken}`,
-            },
-        });
-        const commentResponse = await axios.get(`https://api.github.com/repos/${repositoryFullName}/issues/${prNumber}/comments`, {
-            headers: {
-                Authorization: `Bearer ${githubToken}`,
-            },
-        });
 
+        // 리뷰와 댓글을 병합하여 가져오기
+        const [reviewResponse, commentResponse] = await Promise.all([
+            axios.get(`https://api.github.com/repos/${repositoryFullName}/pulls/${prNumber}/reviews`, {
+                headers: {
+                    Authorization: `Bearer ${githubToken}`,
+                },
+            }),
+            axios.get(`https://api.github.com/repos/${repositoryFullName}/issues/${prNumber}/comments`, {
+                headers: {
+                    Authorization: `Bearer ${githubToken}`,
+                },
+            })
+        ]);
+
+        // 리뷰 및 댓글 개수 가져오기
         const reviewCount = reviewResponse.data.length;
         const commentCount = commentResponse.data.length;
 
-        const hasComments = commentCount > 0;
+        // 리뷰어 찾는 로직 수정
+        const hasComments = commentCount > 0 || reviewCount > 0;
         const isApproved = reviewCount > 0 && reviewResponse.data.some((review) => review.state === 'APPROVED');
         const hasWipLabel = pr.labels.some((label) => label.name.toUpperCase() === 'WIP');
 
