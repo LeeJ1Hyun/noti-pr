@@ -5,8 +5,8 @@ on:
     - cron: '10 5 * * *' # 매일 오후 2시 10분에 실행 (KST 기준)
 
 jobs:
-  notify-slack:
-    runs-on: deali-sandbox-dev-seoul-nimda-actions-runner-4core
+  notify-slack-ver2:
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -22,7 +22,7 @@ jobs:
           npm install axios @slack/web-api dotenv
 
       - name: Notify Slack about PRs
-        run: node .github/scripts/daily_pull_request_status.js
+        run: node .github/scripts/notify-slack-ver2.js
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
