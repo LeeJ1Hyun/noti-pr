@@ -7,7 +7,7 @@ on:
 
 jobs:
   notify-slack:
-    runs-on: deali-sandbox-dev-seoul-nimda-actions-runner-4core
+    runs-on: ubuntu latest
     steps:
       - name: Checkout
         uses: actions/checkout@v3
