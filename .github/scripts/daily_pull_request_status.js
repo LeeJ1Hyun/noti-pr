@@ -73,28 +73,12 @@ async function sendNotification() {
         }
     });
 
-    // const prLinks = prsToNotify.filter((pr) => pr.shouldNotify).map((pr) => ({
-    //     type: 'section',
-    //     text: {
-    //         type: 'mrkdwn',
-    //         text: `<${pr.html_url}|${pr.title}>`
-    //     }
-    // }));
-
     const prLinks = prsToNotify.filter((pr) => pr.shouldNotify).map((pr) => ({
-    type: 'section',
-    text: {
-        type: 'mrkdwn',
-        text: pr.title,
-    },
-    accessory: {
-        type: 'button',
+        type: 'section',
         text: {
-            type: 'plain_text',
-            text: '리뷰 하러가기',
-        },
-        url: pr.html_url,
-     },
+            type: 'mrkdwn',
+            text: `<${pr.html_url}|${pr.title}>`
+        }
     }));
 
     const prsToNotifyCount = prLinks.length;
