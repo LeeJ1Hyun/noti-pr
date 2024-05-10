@@ -1,14 +1,15 @@
-name: Notify Slack about PRs ver2
-# on:
-#   schedule:
-#     - cron: '13 8 * * *'
+name: Daily Pull Request Status
+
 on:
   workflow_dispatch:
+  # schedule:
+  #   - cron: '0 5 * * *' # 매일 오후 2시 실행 (KST 기준)
+
 jobs:
   notify-slack:
-    runs-on: ubuntu-latest
+    runs-on: deali-sandbox-dev-seoul-nimda-actions-runner-4core
     steps:
-      - name: Checkout 코드
+      - name: Checkout
         uses: actions/checkout@v3
 
       - name: Set up Node.js
@@ -16,13 +17,13 @@ jobs:
         with:
           node-version: 18
 
-      - name: Install 의존성
+      - name: Install dependencies
         run: |
           npm init -y
           npm install axios @slack/web-api dotenv
 
-      - name: 찾고 슬랙으로 알림 보내기
-        run: node .github/scripts/notify-slack-ver2.js
+      - name: Notify Slack about PRs
+        run: node .github/scripts/daily_pull_request_status.js
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
