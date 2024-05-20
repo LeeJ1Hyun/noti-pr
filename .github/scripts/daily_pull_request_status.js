@@ -11,6 +11,10 @@ const repositoryFullName = `${repositoryOwner}/${repositoryName}`;
 
 const web = new WebClient(slackBotToken);
 
+function escapeHtml(unsafe) {
+    return unsafe.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
 async function getPRsToNotify() {
     const response = await axios.get(`https://api.github.com/repos/${repositoryFullName}/pulls`, {
         headers: {
@@ -77,7 +81,7 @@ async function sendNotification() {
         type: 'section',
         text: {
             type: 'mrkdwn',
-            text: `<${pr.html_url}|${pr.title}>`
+            text: `<${pr.html_url}|${escapeHtml(pr.title)}>`
         }
     }));
 
@@ -116,7 +120,7 @@ async function sendNotification() {
     }
 
     await web.chat.postMessage({
-        channel: '일기장',
+        channel: '백엔드_결제담당자',
         blocks: messageBlocks,
         unfurl_links: false,
     });
