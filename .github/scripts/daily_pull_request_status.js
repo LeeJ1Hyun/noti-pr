@@ -120,7 +120,7 @@ async function sendNotification() {
     }
 
     await web.chat.postMessage({
-        channel: '백엔드_결제담당자',
+        channel: '일기장',
         blocks: messageBlocks,
         unfurl_links: false,
     });
