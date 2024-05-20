@@ -12,7 +12,7 @@ const repositoryFullName = `${repositoryOwner}/${repositoryName}`;
 const web = new WebClient(slackBotToken);
 
 function escapeHtml(unsafe) {
-    return unsafe.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    return unsafe.replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/&/g, "&amp;");
 }
 
 async function getPRsToNotify() {
