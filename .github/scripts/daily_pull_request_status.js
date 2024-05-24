@@ -45,21 +45,13 @@ async function getPRsToNotify() {
 
         const reviewCount = reviewResponse.data.length;
         const commentCount = commentResponse.data.length;
-
         const hasComments = commentCount > 0 || reviewCount > 0;
 
-        // 디버깅: 리뷰 데이터를 출력
-        console.log(`PR #${prNumber} 리뷰 데이터:`, reviewResponse.data);
-
-        // 수정된 부분: 두 명 이상에게 APPROVED를 받았는지 확인하는 부분
         const approvedReviews = reviewResponse.data.filter((review) => review.state === 'APPROVED');
         console.log(`PR #${prNumber} 승인된 리뷰 수: ${approvedReviews.length}`);
-        const isApprovedByTwoOrMore = approvedReviews.length >= 2; // 두 명 이상 APPROVED 확인
-        console.log(`isApprovedByTwoOrMore: ${isApprovedByTwoOrMore}`);
+        const isApprovedByTwoOrMore = approvedReviews.length >= 2;
         
-        // const isApproved = reviewResponse.data.some((review) => review.state === 'APPROVED');
         const hasWipLabel = pr.labels.some((label) => label.name.toUpperCase() === 'WIP');
-
         const dLabel = pr.labels.find((label) => label.name.match(/^D-\d+$/));
         const shouldNotify = (!hasComments && !isApprovedByTwoOrMore && !hasWipLabel) || (dLabel && !hasComments && !isApprovedByTwoOrMore && !hasWipLabel);
 
@@ -73,6 +65,9 @@ async function getPRsToNotify() {
 
     return prsToNotify;
 }
+
+const a = await getPRsToNotify();
+console.log(`prsToNotify: ${a}`);
 
 async function sendNotification() {
     const prsToNotify = await getPRsToNotify();
