@@ -66,11 +66,10 @@ async function getPRsToNotify() {
     return prsToNotify;
 }
 
-const a = await getPRsToNotify();
-console.log(`prsToNotify: ${a}`);
-
 async function sendNotification() {
     const prsToNotify = await getPRsToNotify();
+    console.log(`prsToNotify: ${prsToNotify}`);
+    console.log(`prsToNotify length: ${prsToNotify.length}`);
 
     prsToNotify.sort((a, b) => {
         if (a.dLabelNumber !== Infinity && b.dLabelNumber === Infinity) {
