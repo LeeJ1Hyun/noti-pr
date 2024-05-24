@@ -48,13 +48,13 @@ async function getPRsToNotify() {
         const hasComments = commentCount > 0 || reviewCount > 0;
 
         const approvedReviews = reviewResponse.data.filter((review) => review.state === 'APPROVED');
-        console.log(`PR #${prNumber} 승인된 리뷰 수: ${approvedReviews.length}`);
         const isApprovedByTwoOrMore = approvedReviews.length >= 2;
         
         const hasWipLabel = pr.labels.some((label) => label.name.toUpperCase() === 'WIP');
         const dLabel = pr.labels.find((label) => label.name.match(/^D-\d+$/));
 
-        if(14 == prNumber) {
+        if(14 == prNumber || 20 == prNumber || 13 == prNumber) {
+            console.log(`======== prNumber: ${prNumber} ========`);
             console.log(`reviewCount: ${reviewCount}`);
             console.log(`commentCount: ${commentCount}`);
             console.log(`hasComments: ${hasComments}`);
@@ -62,12 +62,13 @@ async function getPRsToNotify() {
             console.log(`isApprovedByTwoOrMore: ${isApprovedByTwoOrMore}`);
             console.log(`hasWipLabel: ${hasWipLabel}`);
             console.log(`dLabel: ${dLabel}`);
+            console.log(`========================================`);
         }
         
         const shouldNotify = (!hasComments && !isApprovedByTwoOrMore && !hasWipLabel) || (dLabel && !hasComments && !isApprovedByTwoOrMore && !hasWipLabel);
 
-        if(14 == prNumber) {
-            console.log(`shouldNotify: ${shouldNotify}`);
+        if(14 == prNumber || 20 == prNumber || 13 == prNumber) {
+            console.log(`shouldNotify # PR ${prNumber} : ${shouldNotify}`);
         }
 
         return {
@@ -95,7 +96,6 @@ async function sendNotification() {
     });
 
     console.log(`prsToNotify: ${JSON.stringify(prsToNotify, null, 2)}`);
-    console.log(`prsToNotify length: ${prsToNotify.length}`);
 
     const prLinks = prsToNotify.filter((pr) => pr.shouldNotify).map((pr) => ({
         type: 'section',
