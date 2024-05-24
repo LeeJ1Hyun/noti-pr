@@ -68,8 +68,6 @@ async function getPRsToNotify() {
 
 async function sendNotification() {
     const prsToNotify = await getPRsToNotify();
-    console.log(`prsToNotify: ${prsToNotify}`);
-    console.log(`prsToNotify length: ${prsToNotify.length}`);
 
     prsToNotify.sort((a, b) => {
         if (a.dLabelNumber !== Infinity && b.dLabelNumber === Infinity) {
@@ -80,6 +78,9 @@ async function sendNotification() {
             return a.dLabelNumber - b.dLabelNumber;
         }
     });
+
+    console.log(`prsToNotify: ${JSON.stringify(prsToNotify, null, 2)}`);
+    console.log(`prsToNotify length: ${prsToNotify.length}`);
 
     const prLinks = prsToNotify.filter((pr) => pr.shouldNotify).map((pr) => ({
         type: 'section',
