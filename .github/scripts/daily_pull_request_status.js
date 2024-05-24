@@ -47,11 +47,14 @@ async function getPRsToNotify() {
         const commentCount = commentResponse.data.length;
 
         const hasComments = commentCount > 0 || reviewCount > 0;
-        const isApproved = reviewResponse.data.some((review) => review.state === 'APPROVED');
+
+        const approvedReviews = reviewResponse.data.filter((review) => review.state === 'APPROVED');
+        const isApprovedByTwoOrMore = approvedReviews.length >= 2; // 두 명 이상 APPROVED 확인
+        
         const hasWipLabel = pr.labels.some((label) => label.name.toUpperCase() === 'WIP');
 
         const dLabel = pr.labels.find((label) => label.name.match(/^D-\d+$/));
-        const shouldNotify = (!hasComments && !isApproved && !hasWipLabel) || (dLabel && !hasComments && !isApproved && !hasWipLabel);
+        const shouldNotify = (!hasComments && !isApprovedByTwoOrMore && !hasWipLabel) || (dLabel && !hasComments && !isApprovedByTwoOrMore && !hasWipLabel);
 
         return {
             title: `${dLabel ? `[${dLabel.name}] ` : ''}${pr.title}`,
