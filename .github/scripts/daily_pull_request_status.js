@@ -53,7 +53,22 @@ async function getPRsToNotify() {
         
         const hasWipLabel = pr.labels.some((label) => label.name.toUpperCase() === 'WIP');
         const dLabel = pr.labels.find((label) => label.name.match(/^D-\d+$/));
+
+        if(14 == prNumber) {
+            console.log(`reviewCount: ${reviewCount}`);
+            console.log(`commentCount: ${commentCount}`);
+            console.log(`hasComments: ${hasComments}`);
+            console.log(`approvedReviews: ${approvedReviews}`);
+            console.log(`isApprovedByTwoOrMore: ${isApprovedByTwoOrMore}`);
+            console.log(`hasWipLabel: ${hasWipLabel}`);
+            console.log(`dLabel: ${dLabel}`);
+        }
+        
         const shouldNotify = (!hasComments && !isApprovedByTwoOrMore && !hasWipLabel) || (dLabel && !hasComments && !isApprovedByTwoOrMore && !hasWipLabel);
+
+        if(14 == prNumber) {
+            console.log(`shouldNotify: ${shouldNotify}`);
+        }
 
         return {
             title: `${dLabel ? `[${dLabel.name}] ` : ''}${pr.title}`,
