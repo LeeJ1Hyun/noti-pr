@@ -55,7 +55,7 @@ async function getPRsToNotify() {
         const approvedReviews = reviewResponse.data.filter((review) => review.state === 'APPROVED');
         console.log(`PR #${prNumber} 승인된 리뷰 수: ${approvedReviews.length}`);
         const isApprovedByTwoOrMore = approvedReviews.length >= 2; // 두 명 이상 APPROVED 확인
-        console.log(isApprovedByTwoOrMore: ${isApprovedByTwoOrMore}`);
+        console.log(`isApprovedByTwoOrMore: ${isApprovedByTwoOrMore}`);
         
         // const isApproved = reviewResponse.data.some((review) => review.state === 'APPROVED');
         const hasWipLabel = pr.labels.some((label) => label.name.toUpperCase() === 'WIP');
