@@ -12,138 +12,130 @@ const repositoryFullName = `${repositoryOwner}/${repositoryName}`;
 const web = new WebClient(slackBotToken);
 
 function escapeHtml(unsafe) {
-    return unsafe.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  return unsafe.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function workInProgress(pr) {
+  const hasWipInTitle = pr.title.match(/^WIP(\s|\:)|(\s|\[|\()WIP(\s|\]|\))|🚧/); // "WIP: 어쩌구" 또는 "[WIP] 어쩌구" 또는 "(WIP) 어쩌구" 등의 형태를 체크 + 🚧가 포함됐는지도 체크
+  const hasWipLabel = pr.labels.some((label) => label.name.toUpperCase() === 'WIP');
+
+  return hasWipInTitle || hasWipLabel || pr.draft;
 }
 
 async function getPRsToNotify() {
-    const response = await axios.get(`https://api.github.com/repos/${repositoryFullName}/pulls`, {
-        headers: {
+  const response = await axios.get(`https://api.github.com/repos/${repositoryFullName}/pulls`, {
+    headers: {
+      Authorization: `Bearer ${githubToken}`,
+    },
+    params: {
+      state: 'open',
+      sort: 'created',
+      direction: 'asc',
+    },
+  });
+
+  const prsToNotify = await Promise.all(
+    response.data.map(async (pr) => {
+      const prNumber = pr.number;
+
+      const [reviewResponse, commentResponse] = await Promise.all([
+        axios.get(`https://api.github.com/repos/${repositoryFullName}/pulls/${prNumber}/reviews`, {
+          headers: {
             Authorization: `Bearer ${githubToken}`,
-        },
-        params: {
-            state: 'open',
-            sort: 'created',
-            direction: 'asc',
-        },
-    });
+          },
+        }),
+        axios.get(`https://api.github.com/repos/${repositoryFullName}/issues/${prNumber}/comments`, {
+          headers: {
+            Authorization: `Bearer ${githubToken}`,
+          },
+        }),
+      ]);
 
-    const prsToNotify = await Promise.all(response.data.map(async (pr) => {
-        const prNumber = pr.number;
+      const reviewCount = reviewResponse.data.length;
+      const commentCount = commentResponse.data.length;
 
-        const [reviewResponse, commentResponse] = await Promise.all([
-            axios.get(`https://api.github.com/repos/${repositoryFullName}/pulls/${prNumber}/reviews`, {
-                headers: {
-                    Authorization: `Bearer ${githubToken}`,
-                },
-            }),
-            axios.get(`https://api.github.com/repos/${repositoryFullName}/issues/${prNumber}/comments`, {
-                headers: {
-                    Authorization: `Bearer ${githubToken}`,
-                },
-            })
-        ]);
+      const hasComments = commentCount > 0 || reviewCount > 0;
+      const isApproved = reviewResponse.data.some((review) => review.state === 'APPROVED');
 
-        const reviewCount = reviewResponse.data.length;
-        const commentCount = commentResponse.data.length;
-        const hasComments = commentCount > 0 || reviewCount > 0;
+      const dLabel = pr.labels.find((label) => label.name.match(/^D-\d+$/));
+      const hasFrontendLabel = pr.labels.find((label) => label.name.match(/ADMIN FE/));
 
-        const approvedReviews = reviewResponse.data.filter((review) => review.state === 'APPROVED');
-        const isApprovedByTwoOrMore = approvedReviews.length >= 2;
-        
-        const hasWipLabel = pr.labels.some((label) => label.name.toUpperCase() === 'WIP');
-        const dLabel = pr.labels.find((label) => label.name.match(/^D-\d+$/));
+      const shouldNotify = !hasFrontendLabel && dLabel && !workInProgress(pr) && !hasComments && !isApproved;
 
-        if(14 == prNumber || 20 == prNumber || 13 == prNumber) {
-            console.log(`======== prNumber: ${prNumber} ========`);
-            console.log(`reviewCount: ${reviewCount}`);
-            console.log(`commentCount: ${commentCount}`);
-            console.log(`hasComments: ${hasComments}`);
-            console.log(`approvedReviews: ${approvedReviews}`);
-            console.log(`isApprovedByTwoOrMore: ${isApprovedByTwoOrMore}`);
-            console.log(`hasWipLabel: ${hasWipLabel}`);
-            console.log(`dLabel: ${dLabel}`);
-            console.log(`========================================`);
-        }
-        
-        const shouldNotify = (!hasComments && !isApprovedByTwoOrMore && !hasWipLabel) || (dLabel && !hasComments && !isApprovedByTwoOrMore && !hasWipLabel);
+      return {
+        title: `${dLabel ? `[${dLabel.name}] ` : ''}${pr.title}`,
+        html_url: pr.html_url,
+        shouldNotify: shouldNotify,
+        dLabelNumber: dLabel ? parseInt(dLabel.name.match(/\d+/)[0]) : Infinity,
+      };
+    }),
+  );
 
-        if(14 == prNumber || 20 == prNumber || 13 == prNumber) {
-            console.log(`shouldNotify # PR ${prNumber} : ${shouldNotify}`);
-        }
-
-        return {
-            title: `${dLabel ? `[${dLabel.name}] ` : ''}${pr.title}`,
-            html_url: pr.html_url,
-            shouldNotify: shouldNotify,
-            dLabelNumber: dLabel ? parseInt(dLabel.name.match(/\d+/)[0]) : Infinity,
-        };
-    }));
-
-    return prsToNotify;
+  return prsToNotify;
 }
 
 async function sendNotification() {
-    const prsToNotify = await getPRsToNotify();
+  const prsToNotify = await getPRsToNotify();
 
-    prsToNotify.sort((a, b) => {
-        if (a.dLabelNumber !== Infinity && b.dLabelNumber === Infinity) {
-            return -1;
-        } else if (a.dLabelNumber === Infinity && b.dLabelNumber !== Infinity) {
-            return 1;
-        } else {
-            return a.dLabelNumber - b.dLabelNumber;
-        }
-    });
+  prsToNotify.sort((a, b) => {
+    if (a.dLabelNumber !== Infinity && b.dLabelNumber === Infinity) {
+      return -1;
+    } else if (a.dLabelNumber === Infinity && b.dLabelNumber !== Infinity) {
+      return 1;
+    } else {
+      return a.dLabelNumber - b.dLabelNumber;
+    }
+  });
 
-    console.log(`prsToNotify: ${JSON.stringify(prsToNotify, null, 2)}`);
-
-    const prLinks = prsToNotify.filter((pr) => pr.shouldNotify).map((pr) => ({
-        type: 'section',
-        text: {
-            type: 'mrkdwn',
-            text: `<${pr.html_url}|${escapeHtml(pr.title)}>`
-        }
+  const prLinks = prsToNotify
+    .filter((pr) => pr.shouldNotify)
+    .map((pr) => ({
+      type: 'section',
+      text: {
+        type: 'mrkdwn',
+        text: `<${pr.html_url}|${escapeHtml(pr.title)}>`,
+      },
     }));
 
-    const prsToNotifyCount = prLinks.length;
+  const prsToNotifyCount = prLinks.length;
 
-    let messageBlocks = [];
+  let messageBlocks = [];
 
-    if (prsToNotifyCount >= 7) {
-        messageBlocks.push({
-            type: 'section',
-            text: {
-                type: 'mrkdwn',
-                text: `<!here> 🥹 이제는! 더 이상! 물러날 곳이 없다! <https://github.com/${repositoryFullName}/pulls|리뷰어 찾는 PR들> 보러 갈까요?`
-            }
-        });
-    } else if (prsToNotifyCount > 0) {
-        messageBlocks.push({
-            type: 'section',
-            text: {
-                type: 'mrkdwn',
-                text: `<!here> 📢 리뷰를 기다리고 있는 PR이 ${prsToNotifyCount}개 있어요!`
-            }
-        });
-
-        prLinks.forEach((prLink) => {
-            messageBlocks.push(prLink);
-        });
-    } else {
-        messageBlocks.push({
-            type: 'section',
-            text: {
-                type: 'mrkdwn',
-                text: `<!here> 🥳 리뷰를 기다리는 PR이 없어요!`
-            }
-        });
-    }
-
-    await web.chat.postMessage({
-        channel: '일기장',
-        blocks: messageBlocks,
-        unfurl_links: false,
+  if (prsToNotifyCount >= 7) {
+    messageBlocks.push({
+      type: 'section',
+      text: {
+        type: 'mrkdwn',
+        text: `<!here> 🥹 [NIMDA] 이제는! 더 이상! 물러날 곳이 없다! <https://github.com/${repositoryFullName}/pulls|리뷰어 찾는 PR들> 보러 갈까요?`,
+      },
     });
+  } else if (prsToNotifyCount > 0) {
+    messageBlocks.push({
+      type: 'section',
+      text: {
+        type: 'mrkdwn',
+        text: `<!here> 📢 [NIMDA] 리뷰를 기다리고 있는 PR이 ${prsToNotifyCount}개 있어요!`,
+      },
+    });
+
+    prLinks.forEach((prLink) => {
+      messageBlocks.push(prLink);
+    });
+  } else {
+    messageBlocks.push({
+      type: 'section',
+      text: {
+        type: 'mrkdwn',
+        text: `<!here> 🥳 [NIMDA] 리뷰를 기다리는 PR이 없어요!`,
+      },
+    });
+  }
+
+  await web.chat.postMessage({
+    channel: '일기장',
+    blocks: messageBlocks,
+    unfurl_links: false,
+  });
 }
 
 sendNotification().catch(console.error);
